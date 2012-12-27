@@ -20,7 +20,6 @@
 (with-open [client (http/create-client)]
   (let [response (http/GET client url :headers headers)] 
     (-> response
-      http/await
       http/string))))
 
 (defn get-projects [user pass]
@@ -28,6 +27,15 @@
     (json/read-str
       (get-json "https://devfacto.harvestapp.com/projects" (get-basic-headers user pass))
       :key-fn keyword)))
+
+(defn get-entry [day user pass]
+  (:day_entries 
+     (json/read-str
+       (get-json (format "https://devfacto.harvestapp.com/daily/%s/2012" day) (get-basic-headers user pass))
+       :key-fn keyword)))
+
+(defn get-entries [days user pass]
+  (flatten (map #(get-entry % user pass) days)))
 
 (defn list-projects [user pass]
   (map #(:name %) (get-projects user pass)))
